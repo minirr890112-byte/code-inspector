@@ -73,6 +73,15 @@ Quality Score: ████████████████░░░░ 80/1
 - TODO 炸弹: -8
 - 裸 except: -7
 
+## 生态系统
+
+| Tool | Description |
+|---|---|
+| [prompt-inspector](https://github.com/minirr890112-byte/prompt-inspector) | Scan prompts for censorship triggers |
+| [api-cost-compare](https://github.com/minirr890112-byte/api-cost-compare) | Compare LLM API pricing |
+| [model-watch](https://github.com/minirr890112-byte/model-watch) | Monitor models for degradation |
+| [task-cost-estimator](https://github.com/minirr890112-byte/task-cost-estimator) | Estimate dev task costs |
+
 ## 许可证
 
 MIT License
