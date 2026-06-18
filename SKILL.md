@@ -1,12 +1,12 @@
 ---
 name: code-inspector
-description: AI-generated code quality detector — 8 smell checks (truncation, thinking leaks, hardcoded keys, missing error handling, TODO bombs, copy-paste, bare except, incomplete imports). Quality score 0-100. Supports Python/JS/TS.
+description: Scan AI-generated code for bugs before deploying — 8 static analysis checks from critical (hardcoded secrets, unsafe eval) to low (unused imports). Production-readiness score 0-100. Because AI code looks fine until it isn't.
 version: 1.2.0
 author: minirr890112-byte
 license: MIT
 metadata:
   hermes:
-    tags: [Code-Quality, AI-Code, Linter, Security, Developer-Tools, Python, JavaScript]
+    tags: [Code-Review, Static-Analysis, Security, AI-Code, Quality, CLI, Python]
     homepage: https://github.com/minirr890112-byte/code-inspector
 ---
 
@@ -14,50 +14,40 @@ metadata:
 
 ## Problem → Solution
 
-**The problem**: AI writes your code. You paste it in. It runs. But did the LLM truncate halfway through? Did it leak its thinking process into a comment? Is there an API key hardcoded on line 42? You don't know until it breaks in production.
+**The problem**: AI generates code that compiles and looks correct. But it silently drops edge case handling, hardcodes secrets, catches exceptions with bare except/pass, and uses mutable defaults. You deploy it. It breaks. Reddit is full of "I let Claude loose and it broke the entire site" stories.
 
-**The solution**: One command scans AI-generated code for 8 common failure patterns. Each file gets a 0-100 quality score. Critical issues (truncation, hardcoded secrets) flagged in red. No setup, no config.
+**The solution**: One command scans any Python file for 8 categories of AI-code bugs. Critical → High → Medium → Low severity. Production-readiness score 0-100. Don't deploy AI code blind.
 
 ## Quick Start
 
 ```bash
 pip install git+https://github.com/minirr890112-byte/code-inspector.git
 
-code-inspector check app.py
-code-inspector scan ./src
-code-inspector stats ./project
+code-inspector app.py           # scan a file
+cat app.py | code-inspector     # scan from pipe
 ```
 
-## Real Output
+## What It Checks
+
+| Check | Severity | Example |
+|-------|----------|---------|
+| Hardcoded secrets | 🔴 critical | `api_key = "sk-abc123"` |
+| Unsafe eval/exec | 🔴 critical | `eval(user_input)` |
+| Infinite loops | 🔴 critical | append-while-iterating |
+| Mutable defaults | 🟠 high | `def fn(items=[])` |
+| Shadowed builtins | 🟠 high | `list = [1,2,3]` |
+| Bare except/pass | 🔴 critical | `except: pass` |
+| Deep nesting | 🟡 medium | 5+ nested loops |
+| Unused imports | ⚪ low | AST-based detection |
+
+## Scoring
 
 ```
-$ code-inspector check app.py
-
-╭────────────── Code Inspector ──────────────╮
-│ app.py  |  Language: Python                 │
-╰─────────────────────────────────────────────╯
-Quality Score: ████████████████░░░░ 80/100
-
-╭────────── Smells Found: 2 ──────────╮
-│ # │ Line │ Severity  │ Type         │
-├───┼──────┼───────────┼──────────────┤
-│ 1 │  42  │ 🔴 crit   │ hardcoded key│
-│ 2 │  15  │ 🟡 warn   │ todo bomb    │
-╰──────────────────────────────────────╯
+90-100: 🟢 PRODUCTION-READY
+70-89:  🟡 NEEDS REVIEW
+50-69:  🟠 HIGH RISK
+0-49:   🔴 DO NOT DEPLOY
 ```
-
-## 8 Detectors
-
-| # | Smell | Severity | Penalty |
-|---|-------|----------|---------|
-| 1 | Truncated code (`// ...`, `# rest of`) | 🔴 Critical | -20 |
-| 2 | Thinking leak (`// Let me`, `# First,`) | 🟡 Warning | -15 |
-| 3 | Hardcoded secret (API key, token) | 🔴 Critical | -25 |
-| 4 | Missing error handling (no try/except) | 🟡 Warning | -10 |
-| 5 | TODO bomb (>3 TODOs) | 🟡 Warning | -8 |
-| 6 | Copy-paste (>5 duplicate lines) | 🟡 Warning | -12 |
-| 7 | Incomplete import (`pd`, `np` undefined) | 🔵 Info | -10 |
-| 8 | Bare except (no exception type) | 🟡 Warning | -7 |
 
 ---
-⭐ **Star this repo if it caught a bug before production**: [github.com/minirr890112-byte/code-inspector](https://github.com/minirr890112-byte/code-inspector)
+⭐ **Star this repo if AI code has ever broken your production**: [github.com/minirr890112-byte/code-inspector](https://github.com/minirr890112-byte/code-inspector)
